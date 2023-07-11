@@ -54,13 +54,14 @@ const Movie = () => {
                 colors={['transparent','rgba(23,23,23,1)','rgba(23,23,23,1)' ]}
                 style={{width:width,height:height*0.44,bottom:0}}
                 start={{x:0.5,y:0}}
-                end={{x:0.5,y:1}}/>
+                end={{x:0.5,y:2}}
+                className='absolute bottom-0'/>
                 
                 
                 </View>
             </View>
             {/* movie detail */}
-            <View style={{marginTop:-(height*0.47)}}>
+            <View style={{marginTop:-(height*0.09)}}>
                     {/* movie ttile */}
                     <Text style={tw`text-white text-center text-3xl font-bold tracking-wider`}>
                         {movieName}
