@@ -6,7 +6,10 @@ import tw from 'twrnc'
 import { ChevronLeftIcon, HeartIcon } from 'react-native-heroicons/solid'
 import { Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-
+import Cast from '../components/Cast'
+import MovieList from '../components/movieList'
+import Loading from '../components/Loading'
+import { fallbackMoviePoster, fetchCredit, fetchDetail, fetchSimilarMovies, image500 } from '../api/moviedb'
 const ios=Platform.OS=='ios'
 var {width,height}=Dimensions.get('window')
 const topMargin=ios?'' :'mt-3'
@@ -15,21 +18,45 @@ const Movie = () => {
     const navigation=useNavigation()
     const {params:item}=useRoute()
     const [fav,setFav]=useState(false)
-    
+    const[cast,setCast]=useState([])
+    const [Load,setLoad]=useState(false)
+    const[similarMovies,setSimilarMovies]=useState([])
+    const [movie,setMovie]=useState([])
+   
     useEffect(()=>{
-
-    },[item] )
-
+        getMovieDetail(item.id)
+        getMovieCredit(item.id)
+        getsimilarMovie(item.id)
+    },[] )
+        const getMovieDetail=async(id)=>{
+            const data=await fetchDetail(id)
+            {data && setMovie(data)}
+            
+        }
+        const getMovieCredit=async(id)=>{
+            const data=await fetchCredit(id)
+            if(data && data.cast)setCast(data.cast);
+            
+        }
+        
+        const getsimilarMovie=async(id)=>{
+            const data=await fetchSimilarMovies(id)
+            console.log(data)
+            if( data && data.results) setSimilarMovies(data.results);
+        }
+        
+        
   
-    let movieName='Spider-Man into the multiverse'
+    let movieName='Spider-Man into the spiderverse'
     return (
         <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{paddingBottom:20,
-        flex:1}}
-        style={tw`bg-neutral-900`}>
+        }}
+        className='flex-1 bg-neutral-900'>
 {/* movie poster  */}
             <View style={tw`w-full`}>
-                <SafeAreaView style={tw` flex-row absolute z-20 w-full justify-between items-center px-4 mt-7` }>
+                <SafeAreaView className='flex-row absolute z-20 w-full justify-between items-center px-4 mt-7'>
                     <TouchableOpacity style={{
                         backgroundColor:'#eab308',
                         width:40,
@@ -46,45 +73,59 @@ const Movie = () => {
                         <HeartIcon size={40} color={fav ? theme.background : 'white'}/>
                     </TouchableOpacity>
                 </SafeAreaView>
-                <View>
-                <Image style={{width:width,
-                    height:height*0.55}}
-                    source={require('../assets/images/spiderman.jpg')} />
-                <LinearGradient
-                colors={['transparent','rgba(23,23,23,1)','rgba(23,23,23,1)' ]}
-                style={{width:width,height:height*0.44,bottom:0}}
-                start={{x:0.5,y:0}}
-                end={{x:0.5,y:2}}
-                className='absolute bottom-0'/>
-                
-                
-                </View>
-            </View>
-            {/* movie detail */}
-            <View style={{marginTop:-(height*0.09)}}>
-                    {/* movie ttile */}
-                    <Text style={tw`text-white text-center text-3xl font-bold tracking-wider`}>
-                        {movieName}
-                    </Text>
-                    {/* movie details */}
-                    <Text style={tw`text-neutral-400 font-semibold text-base text-center`}>
-                       Released .2020 . 170min
-                    </Text>
-                    <View style={tw`flex-row justify-center mx-4 space-x-2`}>
-                        <Text style={tw`text-neutral-400 font-semibold text-base text-center`}>
-                            Action .
-                        </Text>
-                        <Text style={tw`text-neutral-400 font-semibold text-base text-center`}>
-                            thriller .
-                        </Text>
-                        <Text style={tw`text-neutral-400 font-semibold text-base text-center`}>
-                            comedy .
-                        </Text>
-                        <Text style={tw`text-neutral-400 font-semibold text-base text-center`}>
-                            sci-fi .
-                        </Text>
+            
+                    <View>
+                    <Image style={{width:width,
+                        height:height*0.55}}
+                        source={{uri:image500(movie.poster_path || fallbackMoviePoster)}}
+                        //source={require('../assets/images/spiderman.jpg')} 
+
+                        />
+                        <LinearGradient
+                        colors={['transparent','rgba(23,23,23,1)','rgba(23,23,23,1)' ]}
+                        style={{width:width,height:height*0.44,bottom:0}}
+                        start={{x:0.5,y:0}}
+                        end={{x:0.5,y:2}}
+                        className='absolute bottom-0'/>
                     </View>
-            </View>
+                    
+                     <View style={{marginTop:-(height*0.09)}} className='space-y-3'>
+                     {/* movie ttile */}
+                     <Text className='text-white text-center text-5xl font-bold tracking-wider'>
+                         {item.title}
+                     </Text>
+                     {/* movie details */}
+
+                     <Text className='text-neutral-400 font-semibold text-base text-center'>
+                        {movie.status} .{item.release_date.split('-')[0]} . {movie.runtime}min
+                     </Text>
+                     <View className='flex-row justify-center mx-4 space-x-2'>
+                 {movie?.genres?.map((genre,index)=>{
+                        return(
+                            <Text key={index} className='text-neutral-400 font-semibold text-base text-center'>
+                            {genre.name} .
+                        </Text>
+                        )
+                 })
+
+                 }
+                    
+                    
+                     </View>
+                     <Text className='text-neutral-400 font-semibold text-base text-center'>
+                        {item.overview}
+                        </Text>
+             </View>
+            {/* cast */}
+             <Cast navigation={navigation}cast={cast} />
+             {/* similar movies */}
+             <MovieList title={'Similar Movies'} data={similarMovies}/>
+             </View>
+             
+              
+            
+            {/* movie detail */}
+           
         </ScrollView>
       
     
